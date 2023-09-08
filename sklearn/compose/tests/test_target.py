@@ -1,25 +1,14 @@
 import numpy as np
 import pytest
 
-from sklearn.base import clone
-from sklearn.base import BaseEstimator
-from sklearn.base import TransformerMixin
-
-from sklearn.dummy import DummyRegressor
-
-from sklearn.utils._testing import assert_allclose
-from sklearn.utils._testing import assert_no_warnings
-
-from sklearn.preprocessing import FunctionTransformer
-from sklearn.preprocessing import StandardScaler
-
-from sklearn.pipeline import Pipeline
-
-from sklearn.linear_model import LinearRegression, OrthogonalMatchingPursuit
-
 from sklearn import datasets
-
+from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.compose import TransformedTargetRegressor
+from sklearn.dummy import DummyRegressor
+from sklearn.linear_model import LinearRegression, OrthogonalMatchingPursuit
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import FunctionTransformer, StandardScaler
+from sklearn.utils._testing import assert_allclose, assert_no_warnings
 
 friedman = datasets.make_friedman1(random_state=0)
 
@@ -375,3 +364,24 @@ def test_transform_target_regressor_route_pipeline():
     pip.fit(X, y, **{"est__check_input": False})
 
     assert regr.transformer_.fit_counter == 1
+
+
+class DummyRegressorWithExtraPredictParams(DummyRegressor):
+    def predict(self, X, check_input=True):
+        # In the test below we make sure that the check input parameter is
+        # passed as false
+        self.predict_called = True
+        assert not check_input
+        return super().predict(X)
+
+
+def test_transform_target_regressor_pass_extra_predict_parameters():
+    # Checks that predict kwargs are passed to regressor.
+    X, y = friedman
+    regr = TransformedTargetRegressor(
+        regressor=DummyRegressorWithExtraPredictParams(), transformer=DummyTransformer()
+    )
+
+    regr.fit(X, y)
+    regr.predict(X, check_input=False)
+    assert regr.regressor_.predict_called

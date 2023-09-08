@@ -67,8 +67,8 @@ import inspect
 import pprint
 from collections import OrderedDict
 
-from ..base import BaseEstimator
 from .._config import get_config
+from ..base import BaseEstimator
 from . import is_scalar_nan
 
 
@@ -129,7 +129,7 @@ class _EstimatorPrettyPrinter(pprint.PrettyPrinter):
       here)
     - format() directly calls _safe_repr() for a first try at rendering the
       object
-    - _safe_repr formats the whole object reccursively, only calling itself,
+    - _safe_repr formats the whole object recursively, only calling itself,
       not caring about line length or anything
     - back to _format(), if the output string is too long, _format() then calls
       the appropriate _pprint_TYPE() method (e.g. _pprint_list()) depending on
